@@ -1,0 +1,63 @@
+// importing frameworks to use
+const express = require('express');
+const mysql = require('mysql2');
+const cors = require('cors');
+// loads env variavble like connection port, id, pass
+require('dotenv').config();
+
+const app = express();
+const PORT = process.env.PORT || 5000;
+
+// using express.json helps Express read the data sent bny JSON 
+app.use(express.json()); 
+app.use(cors());  // using CORS for frontend communication
+
+// Setting up MYSQL connection
+const db = mysql.createConnection({
+    host: process.env.DB_HOST, //getting database varibales for connection from .env
+    user: process.env.DB_USER,
+    password: process.env.DB_PASS,
+    database: process.env.DB_NAME
+});
+
+// connecting to the database MYSQL
+db.connect(err =>{
+    if(err){
+        console.error('MySQL connection faile: ', err);
+        return;
+    }   
+    console.log('MySQL connection Sucessful');
+});
+
+// getting results from database
+app.get('/jobs', (req, res) => { //
+    db.query('SELECT * FROM jobs', (err, results) => { // running the query and storing the results in results 
+      if (err) {
+        return res.status(500).json({ error: err.message });
+      }
+      res.json(results); //
+    });
+  });
+  
+
+  app.post('/jobs', (req, res) => {
+    const { title, company, location, description } = req.body;
+    
+    if (!title || !company || !description) {
+      return res.status(400).json({ error: 'Title, company, and description are required' });
+    }
+  
+    const query = 'INSERT INTO jobs (title, company, location, description) VALUES (?, ?, ?, ?)';
+    
+    db.query(query, [title, company, location, description], (err, results) => {
+      if (err) {
+        return res.status(500).json({ error: err.message });
+      }
+      res.json({ message: 'Job posted successfully', jobId: results.insertId });
+    });
+  });
+
+// const xyz = (para1, para2) => console.log() is like creating a new xyz is name of function, 
+//(contains the parametters) and anything after => is the body of the function 
+
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`)); // starting server by listing on port 
