@@ -35,29 +35,29 @@ app.get('/jobs', (req, res) => { //
       if (err) {
         return res.status(500).json({ error: err.message });
       }
-      res.json(results); //
+      res.json(results); // sends a message from server to client "jobs that are present in db"
     });
   });
   
 
   app.post('/jobs', (req, res) => {
-    const { title, company, location, description } = req.body;
+    const { title, company, location, description } = req.body; // this extracts specific properties from req.body  and stoe it in the following variables
     
-    if (!title || !company || !description) {
-      return res.status(400).json({ error: 'Title, company, and description are required' });
+    if (!title || !company || !description || !location) { // error checking as our dataabse cannot take empty fields for the following fields
+      return res.status(400).json({ error: 'Title, company, location and description are required' });
     }
   
-    const query = 'INSERT INTO jobs (title, company, location, description) VALUES (?, ?, ?, ?)';
+    const query = 'INSERT INTO jobs (title, company, location, description) VALUES (?, ?, ?, ?)'; // creating a query to insert the job in db
     
-    db.query(query, [title, company, location, description], (err, results) => {
+    db.query(query, [title, company, location, description], (err, results) => { // inserting the job by running the query just made and any inline parameters are written in [para1, para2]
       if (err) {
         return res.status(500).json({ error: err.message });
       }
-      res.json({ message: 'Job posted successfully', jobId: results.insertId });
+      res.json({ message: 'Job posted successfully', jobId: results.insertId }); // sends a message from server to client "job posted"
     });
   });
 
-// const xyz = (para1, para2) => console.log() is like creating a new xyz is name of function, 
+// const xyz = (para1, para2) => console.log() is like creating a new function where xyz is name of function, 
 //(contains the parametters) and anything after => is the body of the function 
 
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`)); // starting server by listing on port 
