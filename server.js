@@ -13,7 +13,7 @@ app.use(express.json());
 app.use(cors());  // using CORS for frontend communication
 
 // Setting up MYSQL connection
-const db = mysql.createConnection({
+const db =  mysql.createConnection({
     host: process.env.DB_HOST, //getting database varibales for connection from .env
     user: process.env.DB_USER,
     password: process.env.DB_PASS,
@@ -28,6 +28,8 @@ db.connect(err =>{
     }   
     console.log('MySQL connection Sucessful');
 });
+
+module.exports = { db, app };
 
 // getting results from database
 app.get('/jobs', (req, res) => { //
@@ -57,7 +59,10 @@ app.get('/jobs', (req, res) => { //
     });
   });
 
+ 
 // const xyz = (para1, para2) => console.log() is like creating a new function where xyz is name of function, 
 //(contains the parametters) and anything after => is the body of the function 
-
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`)); // starting server by listing on port 
+
+const authRoutes = require('./Routes/authRoutes'); // getting the authRoutes module to pass the incoming req
+app.use('/auth', authRoutes); // this helpsm the server pass req starting with /auth
