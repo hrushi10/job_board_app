@@ -4,6 +4,9 @@ const router = express.Router();
 const server = require('../server.js');
 const db = server.db;
 
+const jwt = require('jsonwebtoken')
+require('dotenv').config();
+
 // importing bcryptjs to hash password
 const encrypt = require('bcryptjs');
 
@@ -52,13 +55,32 @@ router.post('/login', async (req, res) => {
         const check = await encrypt.compare(password,user.password); 
         
         if(check){
-            res.json({message: "Login Successful!"});
+            // creating a token 
+            const token = jwt.sign({userID: user.id},process.env.JWT_SECRET,{expiresIn:'1h'});
+          
+            res.json({message: "Login Successful!", token});
         }else{
             return res.status(400).json({err:"The Password or the Email does not match !"})
         }
 
     });
    
+});
+
+// test for Authentication Token
+const authenticateToken = require('../middleware/auth.js');
+
+router.get('/profile', authenticateToken, (req, res) => {
+    db.query('SELECT id, name, email FROM users WHERE id = ?', [req.user.userID], (err, results) => {
+      
+        if (err) return res.status(500).json({ error: err.message });
+
+        if (results.length === 0) {
+            return res.status(404).json({ error: "User not found" });
+        }
+
+        res.json(results[0]);  // Send user details
+    });
 });
 
 module.exports = router;
