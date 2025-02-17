@@ -57,8 +57,9 @@ router.post('/login', async (req, res) => {
         if(check){
             // creating a token 
             const token = jwt.sign({userID: user.id},process.env.JWT_SECRET,{expiresIn:'1h'});
-          
-            res.json({message: "Login Successful!", token});
+            res.cookie('token',token, { httpOnly: true, secure: true, sameSite: 'strict' }); 
+            //httpOnly hides the token from the client side cookie, secure makes it accessible only for https
+            res.json({message: "Login Successful!"}); 
         }else{
             return res.status(400).json({err:"The Password or the Email does not match !"})
         }
@@ -67,20 +68,9 @@ router.post('/login', async (req, res) => {
    
 });
 
-// test for Authentication Token
-const authenticateToken = require('../middleware/auth.js');
-
-router.get('/profile', authenticateToken, (req, res) => {
-    db.query('SELECT id, name, email FROM users WHERE id = ?', [req.user.userID], (err, results) => {
-      
-        if (err) return res.status(500).json({ error: err.message });
-
-        if (results.length === 0) {
-            return res.status(404).json({ error: "User not found" });
-        }
-
-        res.json(results[0]);  // Send user details
-    });
+router.post('/logout',(req,res)=>{
+    res.clearCookie('token'); // clearing cookie
+    res.json({message:"Logged Out Sucessfully"}); // display message 
 });
 
 module.exports = router;
