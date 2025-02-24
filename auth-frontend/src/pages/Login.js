@@ -1,8 +1,11 @@
 import { useState } from "react";
-import axios from "axios";
+import { useNavigate } from "react-router-dom";
+import api from "./axiosConfig";
 
-const Signup = () => {
-    const [formData, setFormData] = useState({ email: "", name: "", password: "" });
+
+const Login = () => {
+    const [formData, setFormData] = useState({ email: "", password: "" });
+    const navigate = useNavigate();
 
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -11,8 +14,10 @@ const Signup = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            const res = await axios.post("http://localhost:5000/auth/signup", formData);
+            const res = await api.post("/auth/login", formData);
             alert(res.data.message);
+            
+         navigate("/profile");
         } catch (err) {
             alert(err.response.data.error);
         }
@@ -20,15 +25,14 @@ const Signup = () => {
 
     return (
         <div>
-            <h2>Signup</h2>
+            <h2>Login</h2>
             <form onSubmit={handleSubmit}>
-                <input type="text" name="name" placeholder="Name" onChange={handleChange} required />
                 <input type="email" name="email" placeholder="Email" onChange={handleChange} required />
                 <input type="password" name="password" placeholder="Password" onChange={handleChange} required />
-                <button type="submit">Signup</button>
+                <button type="submit">Login</button>
             </form>
         </div>
     );
 };
 
-export default Signup;
+export default Login;

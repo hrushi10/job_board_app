@@ -3,6 +3,10 @@ const express = require('express');
 const router = express.Router();
 const server = require('../server.js');
 const db = server.db;
+const authMiddleware = require('../middleware/auth.js');
+
+
+
 
 const jwt = require('jsonwebtoken')
 require('dotenv').config();
@@ -47,7 +51,7 @@ router.post('/login', async (req, res) => {
     db.query('select * from users where email = ?', [email], async (err, result) => {
         if(err) return res.status(500).json({error: err.messageq});
         if(result.length === 0) {
-            return res.status(404).json({error:"User does not exists, try signing up!"});        
+            return res.status(404).json({message:"User does not exists, try signing up!"});        
         }
 
         // compare the passsword as user exists
@@ -57,11 +61,15 @@ router.post('/login', async (req, res) => {
         if(check){
             // creating a token 
             const token = jwt.sign({userID: user.id},process.env.JWT_SECRET,{expiresIn:'1h'});
+           
             res.cookie('token',token, { httpOnly: true, secure: true, sameSite: 'strict' }); 
+          
+            
             //httpOnly hides the token from the client side cookie, secure makes it accessible only for https
             res.json({message: "Login Successful!"}); 
+            
         }else{
-            return res.status(400).json({err:"The Password or the Email does not match !"})
+            return res.status(400).json({error:"The Password or the Email does not match !"})
         }
 
     });
@@ -71,6 +79,44 @@ router.post('/login', async (req, res) => {
 router.post('/logout',(req,res)=>{
     res.clearCookie('token'); // clearing cookie
     res.json({message:"Logged Out Sucessfully"}); // display message 
+});
+
+router.post('/profile',authMiddleware,(req,res)=>{
+
+    const {email} = req.body;
+    
+    db.query("select * from users where email = ?",[email],(err, result) =>{
+        if(err) return res.status(500).json({error: err.messageq});
+
+        if(result.length === 0) {
+            console.log("no user found in database");
+            return res.status(404).json({message:"User does not exists, try signing up!"});        
+        }
+         
+       // res.json({ message: "Welcome to your profile!", user: email });
+        res.json(result[0]);
+
+    });
+    
+        
+    
+});
+
+router.get('/profile', authMiddleware ,(req, res) => {
+    
+
+   
+    const userID = req.user.userID; // ✅ Get user ID from decoded token
+
+    db.query("SELECT id, name, email FROM users WHERE id = ?", [userID], (err, result) => {
+        if (err) return res.status(500).json({ error: err.message });
+
+        if (result.length === 0) {
+            return res.status(404).json({ error: "User not found" });
+        }
+
+        res.json(result[0]); // ✅ Send user details
+    });
 });
 
 module.exports = router;

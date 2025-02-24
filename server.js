@@ -1,16 +1,29 @@
 // importing frameworks to use
 const express = require('express');
+const cookieParser = require("cookie-parser");
 const mysql = require('mysql2');
 const cors = require('cors');
+//const cookieParser = require("cookie-parser");
 // loads env variavble like connection port, id, pass
 require('dotenv').config();
+
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
 // using express.json helps Express read the data sent bny JSON 
-app.use(express.json()); 
-app.use(cors());  // using CORS for frontend communication
+app.use(express.json());
+
+
+
+app.use(
+  cors({
+      origin: "http://localhost:3000", // Allow requests only from frontend URL
+      credentials: true,  // Allow cookies and authentication headers
+  })
+);
+
+//pp.use(cookieParser()); 
 
 // Setting up MYSQL connection
 const db =  mysql.createConnection({
@@ -21,7 +34,7 @@ const db =  mysql.createConnection({
 });
 
 // connecting to the database MYSQL
-db.connect(err =>{
+db.connect(err =>{ 
     if(err){
         console.error('MySQL connection faile: ', err);
         return;
@@ -64,5 +77,6 @@ app.get('/jobs', (req, res) => { //
 //(contains the parametters) and anything after => is the body of the function 
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`)); // starting server by listing on port 
 
+app.use(cookieParser());
 const authRoutes = require('./Routes/authRoutes'); // getting the authRoutes module to pass the incoming req
 app.use('/auth', authRoutes); // this helpsm the server pass req starting with /auth
