@@ -10,7 +10,7 @@ const Profile = () => {
     useEffect(() => {
         const fetchProfile = async () => {
             try {
-                const res = await api.get("/auth/profile", {
+                const res = await api.get("auth/profile", {
                     withCredentials: true, 
                 }); 
                 setUser(res.data);

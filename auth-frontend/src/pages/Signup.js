@@ -1,5 +1,5 @@
 import { useState } from "react";
-import axios from "axios";
+import api from "./axiosConfig";
 
 const Signup = () => {
     const [formData, setFormData] = useState({ email: "", name: "", password: "" });
@@ -11,7 +11,7 @@ const Signup = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            const res = await axios.post("http://localhost:5000/auth/signup", formData);
+            const res = await api.post("/auth/signup", formData);
             alert(res.data.message);
         } catch (err) {
             alert(err.response.data.error);
