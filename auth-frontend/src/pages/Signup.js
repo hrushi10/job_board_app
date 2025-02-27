@@ -12,8 +12,11 @@ const Signup = () => {
         e.preventDefault();
         try {
             const res = await api.post("/auth/signup", formData);
+            console.log("reached here");
             alert(res.data.message);
+
         } catch (err) {
+            console.log("this is the error during signup: ", err)
             alert(err.response.data.error);
         }
     };

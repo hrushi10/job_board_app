@@ -61,9 +61,9 @@ router.post('/login', async (req, res) => {
         if(check){
             // creating a token 
             const token = jwt.sign({userID: user.id},process.env.JWT_SECRET,{expiresIn:'1h'});
-           
+            //console.log("token in login: ", token);
             res.cookie('token',token, { httpOnly: true, secure: true, sameSite: 'strict' }); 
-          
+            //res.cookie('token', token);
             
             //httpOnly hides the token from the client side cookie, secure makes it accessible only for https
             res.json({message: "Login Successful!"}); 

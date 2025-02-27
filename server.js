@@ -14,12 +14,24 @@ const PORT = process.env.PORT || 5000;
 // using express.json helps Express read the data sent bny JSON 
 app.use(express.json());
 
-
+const allowedOrigins = [
+  "http://localhost:3000",  
+  "http://10.0.0.53:3000",  
+  "http://example.com"  // Add more origins as needed
+];
 
 app.use(
   cors({
-      origin: "http://localhost:3000", // Allow requests only from frontend URL
+    origin: function (origin, callback) {
+      if (!origin || allowedOrigins.includes(origin)) {
+          callback(null, true);  // ✅ Allow request
+      } else {
+          callback(new Error("Not allowed by CORS"));  // ❌ Block request
+      }
+  }, // Allow requests only from frontend URL
+      methods: ["GET", "POST", "PUT", "DELETE"],
       credentials: true,  // Allow cookies and authentication headers
+
   })
 );
 
