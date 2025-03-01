@@ -4,7 +4,8 @@ const router = express.Router();
 const server = require('../server.js');
 const db = server.db;
 const authMiddleware = require('../middleware/auth.js');
-
+const multer = require("multer");
+const path = require("path");
 
 
 
@@ -62,7 +63,7 @@ router.post('/login', async (req, res) => {
             // creating a token 
             const token = jwt.sign({userID: user.id},process.env.JWT_SECRET,{expiresIn:'1h'});
             //console.log("token in login: ", token);
-            res.cookie('token',token, { httpOnly: true, secure: true, sameSite: 'strict' }); 
+            res.cookie('token',token, { httpOnly: true, secure: false, sameSite: 'lax' }); 
             //res.cookie('token', token);
             
             //httpOnly hides the token from the client side cookie, secure makes it accessible only for https
@@ -77,6 +78,11 @@ router.post('/login', async (req, res) => {
 });
 
 router.post('/logout',(req,res)=>{
+    res.clearCookie('token'); // clearing cookie
+    res.json({message:"Logged Out Sucessfully"}); // display message 
+});
+
+router.post('/edit',(req,res)=>{
     res.clearCookie('token'); // clearing cookie
     res.json({message:"Logged Out Sucessfully"}); // display message 
 });
@@ -118,6 +124,40 @@ router.get('/profile', authMiddleware ,(req, res) => {
         res.json(result[0]); // ✅ Send user details
     });
 });
+
+router.get('/profileData', authMiddleware ,(req, res) => {
+    
+
+   
+    const userID = req.user.userID; // ✅ Get user ID from decoded token
+   
+   
+    db.query("SELECT * FROM ProfileData WHERE id = ?", userID, (err, result) => {
+        if (err) return res.status(500).json({ error: err.message });
+
+        if (result.length === 0) {
+            return res.status(404).json({ error: "User not found" });
+        }
+       
+        res.json(result[0]); // ✅ Send user details
+    });
+});
+
+
+
+const storage = multer.diskStorage({
+    destination: path.join("C:\\Users\\patel\\NodeJs-Worksapce\\Project Uploads\\Profile Pictures"),
+    filename: (req, file, cb) => {
+      cb(null, Date.now() + path.extname(file.originalname)); // Unique file name
+    },
+  });
+  
+  const upload = multer({ storage });
+  
+  router.post("/upload", upload.single("image"), (req, res) => {
+    if (!req.file) return res.status(400).send("No file uploaded.");
+    res.json({ filePath: `http://localhost:5000/${req.file.filename}` });
+  });
 
 module.exports = router;
 

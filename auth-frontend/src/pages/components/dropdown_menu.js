@@ -1,8 +1,20 @@
 import { useState } from "react";
 import { ChevronDownIcon } from "@heroicons/react/solid";
+import { useNavigate} from "react-router-dom"
+import api from "../axiosConfig";
 
 const Dropdown = () => {
+
+     const [user, setUser] = useState(null);
+      const navigate = useNavigate();
+
   const [isOpen, setIsOpen] = useState(false);
+  
+  const handleLogout = async () => {
+    await api.post("/auth/logout");
+    setUser(null);
+    navigate("/login");
+};
 
   return (
     <div className="relative">
@@ -17,8 +29,8 @@ const Dropdown = () => {
       {isOpen && (
         <div className="absolute right-0 bg-gray-700 shadow-md rounded-md mt-2 w-40">
           <a href="/profile" className="block px-4 py-2 hover:bg-gray-300 hover:text-black">Profile</a>
-          <a href="#" className="block px-4 py-2 hover:bg-gray-300 hover:text-black" >Settings</a>
-          <a href="/logout" className="block px-4 py-2 hover:bg-gray-300 hover:text-red-800">Logout</a>
+          <a href="/upload" className="block px-4 py-2 hover:bg-gray-300 hover:text-black" >Settings</a>
+          <a onClick={handleLogout}   className="block px-4 py-2 hover:bg-gray-300 hover:text-red-800">Logout</a>
         </div>
       )}
     </div>

@@ -3,6 +3,7 @@ const express = require('express');
 const cookieParser = require("cookie-parser");
 const mysql = require('mysql2');
 const cors = require('cors');
+
 //const cookieParser = require("cookie-parser");
 // loads env variavble like connection port, id, pass
 require('dotenv').config();
@@ -29,7 +30,7 @@ app.use(
           callback(new Error("Not allowed by CORS"));  // ❌ Block request
       }
   }, // Allow requests only from frontend URL
-      methods: ["GET", "POST", "PUT", "DELETE"],
+    //  methods: ["GET", "POST", "PUT", "DELETE"],
       credentials: true,  // Allow cookies and authentication headers
 
   })
@@ -83,6 +84,13 @@ app.get('/jobs', (req, res) => { //
       res.json({ message: 'Job posted successfully', jobId: results.insertId }); // sends a message from server to client "job posted"
     });
   });
+
+
+
+
+  
+
+
 
  
 // const xyz = (para1, para2) => console.log() is like creating a new function where xyz is name of function, 

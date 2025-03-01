@@ -3,6 +3,7 @@ import Signup from "./pages/Signup";
 import Login from "./pages/Login";
 import Home from "./pages/Home";
 import Navbar from "./pages/components/Navbar";
+import Upload from "./pages/components/Upload_ProfileP";
 import Profile from "./pages/Profile";
 
 function App() {
@@ -14,6 +15,7 @@ function App() {
                 <Route path="/signup" element={<Signup />} />
                  <Route path="/login" element={<Login />} />
                  <Route path="/profile" element={<Profile />} />
+                 <Route path="/upload" element={<Upload />} />
               </Routes>
         </Router>
     );

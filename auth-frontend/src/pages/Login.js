@@ -19,7 +19,7 @@ const Login = () => {
         try {
             const res = await api.post("/auth/login", formData, {
                 withCredentials: true, 
-            });
+             });
              alert(res.data.message);
             
          navigate("/profile");
