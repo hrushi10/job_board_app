@@ -19,6 +19,7 @@ const UploadPicture = () => {
   const handleUpload = async () => {
     if (!image) {
       alert("Please select an image first!");
+      
       return;
     }
 
@@ -29,7 +30,7 @@ const UploadPicture = () => {
        await api.post("/auth/upload", formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
-      console.log("reached here");
+      
       navigate('/profile');
     } catch (err) {
       console.error("Upload failed:", err);

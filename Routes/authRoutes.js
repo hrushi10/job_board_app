@@ -50,7 +50,7 @@ router.post('/login', async (req, res) => {
     const {email, password} = req.body;
 
     db.query('select * from users where email = ?', [email], async (err, result) => {
-        if(err) return res.status(500).json({error: err.messageq});
+        if(err) return res.status(500).json({error: err.message});
         if(result.length === 0) {
             return res.status(404).json({message:"User does not exists, try signing up!"});        
         }
@@ -113,6 +113,7 @@ router.get('/profile', authMiddleware ,(req, res) => {
 
    
     const userID = req.user.userID; // ✅ Get user ID from decoded token
+    const profileData = { fullName: "", jobTitle: "" ,address: "", email:"", phone: "", company:"", picture:"", comAddress:""};
 
     db.query("SELECT id, name, email FROM users WHERE id = ?", [userID], (err, result) => {
         if (err) return res.status(500).json({ error: err.message });
@@ -121,27 +122,61 @@ router.get('/profile', authMiddleware ,(req, res) => {
             return res.status(404).json({ error: "User not found" });
         }
 
-        res.json(result[0]); // ✅ Send user details
+       
+            profileData.fullName = result[0].name;
+            
+            profileData.email = result[0].email;
     });
-});
 
-router.get('/profileData', authMiddleware ,(req, res) => {
-    
-
-   
-    const userID = req.user.userID; // ✅ Get user ID from decoded token
-   
-   
     db.query("SELECT * FROM ProfileData WHERE id = ?", userID, (err, result) => {
         if (err) return res.status(500).json({ error: err.message });
 
         if (result.length === 0) {
             return res.status(404).json({ error: "User not found" });
         }
-       
-        res.json(result[0]); // ✅ Send user details
-    });
+        
+        profileData.address = result[0].pAddress;
+        profileData.jobTitle = result[0].title;
+        profileData.phone = result[0].pNumber;
+        profileData.company = result[0].company;
+        profileData.comAddress = result[0].comAddress;
+        profileData.picture = result[0].picture;
+
+        res.json(profileData);
 });
+
+});
+
+
+router.post('/saveProfile', (req, res) => {
+    const { fullName, jobTitle, address, email, phone } = req.body;
+    const token = req.cookies.token;
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+   
+    db.query(
+        "UPDATE users SET name = ?, email = ? WHERE id = ?",
+        [fullName, email, decoded.userID],
+        (err, result) => {
+            if (err) return res.status(500).json({ error: err.message });
+
+            // Now execute the second query inside the first query's callback
+            db.query(
+                "UPDATE profileData SET pAddress = ?, title = ?, pNumber = ? WHERE id = ?",
+                [address, jobTitle, phone, decoded.userID],
+                (err, result) => {
+                    if (err) return res.status(500).json({ error: err.message });
+
+                    // Now send the response after both queries finish
+                     res.json({ message: "Profile Data saved successfully" });
+                }
+            );
+        }
+    );
+
+   
+});
+
 
 
 
@@ -154,9 +189,17 @@ const storage = multer.diskStorage({
   
   const upload = multer({ storage });
   
-  router.post("/upload", upload.single("image"), (req, res) => {
+//   router.post("/upload", upload.single("image"), (req, res) => {
+//     if (!req.file) return res.status(400).send("No file uploaded.");
+//     res.json({ filePath: `http://localhost:5000/${req.file.filename}` });
+
+router.use("/uploads", express.static("C:\\Users\\patel\\NodeJs-Worksapce\\Project Uploads\\Profile Pictures"));
+
+router.post("/upload", upload.single("image"), (req, res) => {
     if (!req.file) return res.status(400).send("No file uploaded.");
-    res.json({ filePath: `http://localhost:5000/${req.file.filename}` });
+    
+    // Correct file path
+    res.json({ filePath: `http://localhost:5000/uploads/${req.file.filename}` });
   });
 
 module.exports = router;
