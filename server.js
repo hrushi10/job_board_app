@@ -4,6 +4,8 @@ const cookieParser = require("cookie-parser");
 const mysql = require('mysql2');
 const cors = require('cors');
 
+
+
 //const cookieParser = require("cookie-parser");
 // loads env variavble like connection port, id, pass
 require('dotenv').config();
@@ -86,13 +88,6 @@ app.get('/jobs', (req, res) => { //
   });
 
 
-
-
-  
-
-
-
- 
 // const xyz = (para1, para2) => console.log() is like creating a new function where xyz is name of function, 
 //(contains the parametters) and anything after => is the body of the function 
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`)); // starting server by listing on port 

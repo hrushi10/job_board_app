@@ -42,7 +42,7 @@ return (
             {user ? (
                 <>
                       
-                    <img src={user.pic} alt="profile"  className="w-10 h-10 rounded-full object-cover"></img> 
+                    <img src={user.picture} alt="profile"  className="w-10 h-10 rounded-full object-cover"></img> 
                     <h2>{user.name}</h2>
                     
                     {/* <Link to="/profile" className="hover:text-pink-300">Profile</Link>

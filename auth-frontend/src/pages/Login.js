@@ -34,9 +34,9 @@ const Login = () => {
             <div className="bg-white p-8 rounded-lg shadow-lg w-96">
                 <h2 className="text-2xl font-bold mb-4 text-center">Login</h2>
             <form onSubmit={handleSubmit}>
-                <input type="email" name="email" placeholder="Email" onChange={handleChange} required className="w-full px-4 py-2 border rounded-md focus:ring focus:ring-blue-300"
+                <input type="email" name="email" placeholder="Email" onChange={handleChange} required className="w-full mb-2 px-4 py-2 border rounded-md focus:ring focus:ring-blue-300"
                         />
-                <input type="password" name="password" placeholder="Password" onChange={handleChange} className="w-full px-4 py-2 border rounded-md focus:ring focus:ring-blue-300"
+                <input type="password" name="password" placeholder="Password" onChange={handleChange} className="w-full mb-2 px-4 py-2 border rounded-md focus:ring focus:ring-blue-300"
                         required />
                 <button 
                         type="submit"

@@ -6,6 +6,7 @@ import api from "../axiosConfig";
 const UploadPicture = () => {
   const [image, setImage] = useState(null);
   const [preview, setPreview] = useState(null);
+  const [imageUrl, setImageUrl] = useState("");
   const navigate = useNavigate();
 
   const handleImageChange = (event) => {
@@ -23,15 +24,16 @@ const UploadPicture = () => {
       return;
     }
 
-    const formData = new FormData();
-    formData.append("image", image);
-
+        const formData = new FormData();
+        formData.append("image", image);
+        
     try {
-       await api.post("/auth/upload", formData, {
+       const res = await api.post("/auth/upload", formData,{
         headers: { "Content-Type": "multipart/form-data" },
-      });
-      
-      navigate('/profile');
+        withCredentials: true  // Important if cookies are used for auth
+    });
+        setImageUrl(res.data.imageUrl);
+        navigate('/profile');
     } catch (err) {
       console.error("Upload failed:", err);
       alert("Upload failed!");

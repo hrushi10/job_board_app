@@ -5,7 +5,7 @@ const server = require('../server.js');
 const db = server.db;
 const authMiddleware = require('../middleware/auth.js');
 const multer = require("multer");
-const path = require("path");
+const cloudinary = require('cloudinary').v2;
 
 
 
@@ -82,31 +82,9 @@ router.post('/logout',(req,res)=>{
     res.json({message:"Logged Out Sucessfully"}); // display message 
 });
 
-router.post('/edit',(req,res)=>{
-    res.clearCookie('token'); // clearing cookie
-    res.json({message:"Logged Out Sucessfully"}); // display message 
-});
 
-router.post('/profile',authMiddleware,(req,res)=>{
 
-    const {email} = req.body;
-    
-    db.query("select * from users where email = ?",[email],(err, result) =>{
-        if(err) return res.status(500).json({error: err.messageq});
 
-        if(result.length === 0) {
-            console.log("no user found in database");
-            return res.status(404).json({message:"User does not exists, try signing up!"});        
-        }
-         
-       // res.json({ message: "Welcome to your profile!", user: email });
-        res.json(result[0]);
-
-    });
-    
-        
-    
-});
 
 router.get('/profile', authMiddleware ,(req, res) => {
     
@@ -115,7 +93,7 @@ router.get('/profile', authMiddleware ,(req, res) => {
     const userID = req.user.userID; // ✅ Get user ID from decoded token
     const profileData = { fullName: "", jobTitle: "" ,address: "", email:"", phone: "", company:"", picture:"", comAddress:""};
 
-    db.query("SELECT id, name, email FROM users WHERE id = ?", [userID], (err, result) => {
+     db.query("SELECT id, name, email FROM users WHERE id = ?", [userID], (err, result) => {
         if (err) return res.status(500).json({ error: err.message });
 
         if (result.length === 0) {
@@ -128,7 +106,7 @@ router.get('/profile', authMiddleware ,(req, res) => {
             profileData.email = result[0].email;
     });
 
-    db.query("SELECT * FROM ProfileData WHERE id = ?", userID, (err, result) => {
+     db.query("SELECT * FROM ProfileData WHERE id = ?", userID, (err, result) => {
         if (err) return res.status(500).json({ error: err.message });
 
         if (result.length === 0) {
@@ -177,30 +155,40 @@ router.post('/saveProfile', (req, res) => {
    
 });
 
+cloudinary.config({
+    cloud_name: "dhmy3ph8n",
+    api_key: "448622223764842",
+    api_secret: "gIlM0ZwnkZ5Xju8g_LDXhFnVS5M"
+});
 
 
 
 const storage = multer.diskStorage({
-    destination: path.join("C:\\Users\\patel\\NodeJs-Worksapce\\Project Uploads\\Profile Pictures"),
+    destination: "./uploads/",
     filename: (req, file, cb) => {
-      cb(null, Date.now() + path.extname(file.originalname)); // Unique file name
+      cb(null, Date.now() + "-" + file.originalname);
     },
-  });
+});
   
-  const upload = multer({ storage });
+const upload = multer({ storage });
   
-//   router.post("/upload", upload.single("image"), (req, res) => {
-//     if (!req.file) return res.status(400).send("No file uploaded.");
-//     res.json({ filePath: `http://localhost:5000/${req.file.filename}` });
+router.post("/upload", upload.single("image"), authMiddleware, async (req, res) => {
 
-router.use("/uploads", express.static("C:\\Users\\patel\\NodeJs-Worksapce\\Project Uploads\\Profile Pictures"));
+    const userID = req.user.userID;
 
-router.post("/upload", upload.single("image"), (req, res) => {
     if (!req.file) return res.status(400).send("No file uploaded.");
-    
-    // Correct file path
-    res.json({ filePath: `http://localhost:5000/uploads/${req.file.filename}` });
-  });
+
+    const fileUrl = await cloudinary.uploader.upload(req.file.path, {
+        folder: "profile_pictures"
+    });
+       
+    db.query("UPDATE ProfileData SET picture = ? WHERE id = ?", [fileUrl.url, userID]);
+
+    res.json({ filePath: fileUrl });
+});
+
+
+
 
 module.exports = router;
 
