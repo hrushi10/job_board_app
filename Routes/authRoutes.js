@@ -15,9 +15,31 @@ require('dotenv').config();
 // importing bcryptjs to hash password
 const encrypt = require('bcryptjs');
 
-router.post('/signup', async (req, res) => { // using async as hashing needs time and returns promise 
-    // getting parameterds from body
-    const {email, name, password} = req.body;
+cloudinary.config({
+    cloud_name: env.cloud_name,
+    api_key: env.cloudinary_api_key,
+    api_secret: env.cloudinary_api_secret
+});
+
+
+
+const storage = multer.diskStorage({
+    destination: "./uploads/",
+    filename: (req, file, cb) => {
+      cb(null, Date.now() + "-" + file.originalname);
+    },
+});
+  
+const upload = multer({ storage });
+
+router.post('/signup', upload.single("profilePicture"),async (req, res) => { // using async as hashing needs time and returns promise 
+    // getting parameters from body
+    
+    const {email, fName, lName,password, workStatus, phone} = req.body;
+    const file = req.file;
+     
+    const fname = fName + " " + lName;
+   
 
      //
     db.query('select email from Users where email = ?', [email], async (err, results) =>{
@@ -32,13 +54,29 @@ router.post('/signup', async (req, res) => { // using async as hashing needs tim
             const salt = await encrypt.genSalt(10);
             const haspass = await encrypt.hash(password,salt);
 
-            const insertQuery= 'INSERT INTO users (email,name, password) values (?,?,?)';
-            db.query(insertQuery, [email,name,haspass], (err,results) => {
+            const insertQuery1= 'INSERT INTO users (email,name, password) values (?,?,?)';
+            db.query(insertQuery1, [email,fname,haspass], (err,results) => {
                 if(err){
                     return res.status(500).json({error: err.message});
                 }
                 res.json({message: 'User Created Successfully'})
             });
+
+            const insertQuery2 = 'INSERT INTO ProfileData (id, pAddress, company, title, comAddress,pNumber,picture) values ((SELECT id FROM users WHERE email = ?),?,?,?,?,?,?)';
+            let pictureUrl = null;
+            if (file) {
+                const fileUrl = await cloudinary.uploader.upload(file.path, {
+                    folder: "profile_pictures"
+                });
+                pictureUrl = fileUrl.url;
+            }
+            db.query(insertQuery2, [email, phone, companyName, jobTitle,], (err, results) => {
+                if (err) {
+                    return res.status(500).json({ error: err.message });
+                }
+            });
+
+
 
         }
     });
@@ -46,6 +84,7 @@ router.post('/signup', async (req, res) => { // using async as hashing needs tim
 
 });
 
+// * login route*//
 router.post('/login', async (req, res) => {
     const {email, password} = req.body;
 
@@ -55,7 +94,7 @@ router.post('/login', async (req, res) => {
             return res.status(404).json({message:"User does not exists, try signing up!"});        
         }
 
-        // compare the passsword as user exists
+        // compare the password as user exists
         const user = result[0];
         const check = await encrypt.compare(password,user.password); 
         
@@ -79,13 +118,13 @@ router.post('/login', async (req, res) => {
 
 router.post('/logout',(req,res)=>{
     res.clearCookie('token'); // clearing cookie
-    res.json({message:"Logged Out Sucessfully"}); // display message 
+    res.json({message:"Logged Out Successfully"}); // display message 
 });
 
 
 
 
-
+// * getting the profile data to display*//
 router.get('/profile', authMiddleware ,(req, res) => {
     
 
@@ -97,7 +136,7 @@ router.get('/profile', authMiddleware ,(req, res) => {
         if (err) return res.status(500).json({ error: err.message });
 
         if (result.length === 0) {
-            return res.status(404).json({ error: "User not found" });
+             return res.status(404).json({ error: "User not found error in profile" });
         }
 
        
@@ -106,11 +145,11 @@ router.get('/profile', authMiddleware ,(req, res) => {
             profileData.email = result[0].email;
     });
 
-     db.query("SELECT * FROM ProfileData WHERE id = ?", userID, (err, result) => {
+     db.query("SELECT * FROM ProfileData WHERE id = ?", [userID], (err, result) => {
         if (err) return res.status(500).json({ error: err.message });
 
         if (result.length === 0) {
-            return res.status(404).json({ error: "User not found" });
+            return res.status(404).json({ error: "User not found in ProfileData" });
         }
         
         profileData.address = result[0].pAddress;
@@ -125,7 +164,7 @@ router.get('/profile', authMiddleware ,(req, res) => {
 
 });
 
-
+// * updating the profile data*//
 router.post('/saveProfile', (req, res) => {
     const { fullName, jobTitle, address, email, phone } = req.body;
     const token = req.cookies.token;
@@ -155,22 +194,9 @@ router.post('/saveProfile', (req, res) => {
    
 });
 
-cloudinary.config({
-    cloud_name: "dhmy3ph8n",
-    api_key: "448622223764842",
-    api_secret: "gIlM0ZwnkZ5Xju8g_LDXhFnVS5M"
-});
 
-
-
-const storage = multer.diskStorage({
-    destination: "./uploads/",
-    filename: (req, file, cb) => {
-      cb(null, Date.now() + "-" + file.originalname);
-    },
-});
-  
-const upload = multer({ storage });
+// * uploading the profile picture*//
+{
   
 router.post("/upload", upload.single("image"), authMiddleware, async (req, res) => {
 
@@ -186,6 +212,8 @@ router.post("/upload", upload.single("image"), authMiddleware, async (req, res) 
 
     res.json({ filePath: fileUrl });
 });
+
+}
 
 
 

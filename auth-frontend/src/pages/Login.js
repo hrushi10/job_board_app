@@ -30,19 +30,31 @@ const Login = () => {
 
     return (
         <div>
-            <div className="flex items-center justify-center min-h-screen bg-gray-100">
-            <div className="bg-white p-8 rounded-lg shadow-lg w-96">
-                <h2 className="text-2xl font-bold mb-4 text-center">Login</h2>
+            <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100">
+            <div class="sm:mx-auto sm:w-full sm:max-w-md">
+            <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">Sign in to your account</h2>
+            <p class="mt-2 text-center text-sm text-gray-600 max-w"> Or <a class = "font-medium text-stone-600 hover:text-stone-700" href='/Signup'>Create an account</a></p>
+            </div>
+            
+            <div className="mt-6 bg-white p-8 rounded-lg shadow-lg w-96">
+                
             <form onSubmit={handleSubmit}>
-                <input type="email" name="email" placeholder="Email" onChange={handleChange} required className="w-full mb-2 px-4 py-2 border rounded-md focus:ring focus:ring-blue-300"
+                <p class="block text-sm font-medium text-gray-700">Email address</p>
+                <input type="email" name="email" placeholder="Enter your email address" onChange={handleChange} required className="w-full mb-2 px-4 py-2 border rounded-md focus:ring focus:ring-blue-300 mb-6"
                         />
-                <input type="password" name="password" placeholder="Password" onChange={handleChange} className="w-full mb-2 px-4 py-2 border rounded-md focus:ring focus:ring-blue-300"
+                 <p class="block text-sm font-medium text-gray-700">Password</p>
+                <input type="password" name="password" placeholder="Enter your Password" onChange={handleChange} className="w-full mb-2 px-4 py-2 border rounded-md focus:ring focus:ring-blue-300  mb-6"
                         required />
+                <div class="mb-4 flex items-center justify-between">
+                    <input type="checkbox"  value="Remember me" class="mr-2" /> 
+                    <label> Remember me</label>
+                    <a href="#" class=" font-medium text-blue-600 hover:text-blue-500">Forgot your password?</a>
+                    </div>
                 <button 
                         type="submit"
-                        className="w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 transition duration-200"
+                        className="w-full bg-stone-500 text-white py-2 rounded-md hover:bg-stone-700 transition duration-200"
                     >
-                        Login
+                        Sign In
                         </button>
 
             </form>
