@@ -21,7 +21,7 @@ const Signup = () => {
     const navigate = useNavigate();
 
     const signupType = (e) => {
-        const action = e.target.dataset.action; // 🔥 Get action from 'data-action'
+        const action = e.target.dataset.action; // getting the value of the button clicked (employee, recruiter or company)
         
         setFormData( ({ ...formData, userType: e.target.value }));
         
@@ -183,13 +183,13 @@ const Signup = () => {
                         {isVisible1 && (
                             <div id="step-1" class="grid grid-cols-3  gap-2 bg-white rounded-lg">
                                 <div class="justify-self-center">
-                                    <button value ="Employee" data-action="employee" onClick={signupType} class="bg-stone-500 px-4 py-2 rounded text-white hover:bg-stone-600 " >Employee</button>
+                                    <button name ="userType" id = "employee" value ="Employee" data-action="employee" onClick={signupType} class="bg-stone-500 px-4 py-2 rounded text-white hover:bg-stone-600 " >Employee</button>
                                 </div>
                                 <div class="justify-self-center">
-                                    <button value ="Recruiter" data-action="recruiter" onClick={signupType} class="bg-stone-500 px-4 py-2 rounded text-white hover:bg-stone-600 " >Recruiter</button>
+                                    <button name ="userType" id = "recruiter" value ="Recruiter" data-action="recruiter" onClick={signupType} class="bg-stone-500 px-4 py-2 rounded text-white hover:bg-stone-600 " >Recruiter</button>
                                 </div>
                                 <div class="justify-self-center">
-                                    <button value ="Company" data-action="company" onClick={signupType} class="bg-stone-500 px-4 py-2 rounded text-white hover:bg-stone-600 " >Company</button>
+                                    <button name ="userType" id = "company" value ="Company" data-action="company" onClick={signupType} class="bg-stone-500 px-4 py-2 rounded text-white hover:bg-stone-600 " >Company</button>
                                 </div>
 
                             </div>
@@ -293,7 +293,7 @@ const Signup = () => {
                                                 type="radio"
                                                 name="workStatus"
                                                 id="working"
-                                                value={"notWorking"}
+                                                value={"Working"}
                                                 onChange={handleChange}
                                                 onClick={handleCompany}
                                             />

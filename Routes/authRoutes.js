@@ -1,4 +1,3 @@
-
 const express = require('express');
 const router = express.Router();
 const server = require('../server.js');
@@ -16,9 +15,9 @@ require('dotenv').config();
 const encrypt = require('bcryptjs');
 
 cloudinary.config({
-    cloud_name: env.cloud_name,
-    api_key: env.cloudinary_api_key,
-    api_secret: env.cloudinary_api_secret
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET
 });
 
 
@@ -32,56 +31,79 @@ const storage = multer.diskStorage({
   
 const upload = multer({ storage });
 
-router.post('/signup', upload.single("profilePicture"),async (req, res) => { // using async as hashing needs time and returns promise 
-    // getting parameters from body
-    
-    const {email, fName, lName,password, workStatus, phone} = req.body;
+router.post('/signup', upload.single("profilePicture"), async (req, res) => {
+    const { email, fName, lName, password, userType, workStatus, phone, pAddress, companyName, jobTitle, comAddress } = req.body;
     const file = req.file;
-     
-    const fname = fName + " " + lName;
-   
 
-     //
-    db.query('select email from Users where email = ?', [email], async (err, results) =>{
-        if(err){
-            return res.status(500).json({ error: err.message }); 
-        }else if(results.length >0){ // checking if the user already exist
-            
-            return res.status(404).json({ error: "User already Exists, Try login" });
-        }else{
-             // hasing the password
-             // using await because it returns promise 
-            const salt = await encrypt.genSalt(10);
-            const haspass = await encrypt.hash(password,salt);
+    if (!email || !fName || !lName || !password || !userType || !workStatus) {
+        return res.status(400).json({ error: "Missing required fields." });
+    }
 
-            const insertQuery1= 'INSERT INTO users (email,name, password) values (?,?,?)';
-            db.query(insertQuery1, [email,fname,haspass], (err,results) => {
-                if(err){
-                    return res.status(500).json({error: err.message});
-                }
-                res.json({message: 'User Created Successfully'})
+    const fname = `${fName} ${lName}`;
+    const cName = companyName || "na";
+    const title = jobTitle || "na";
+    const cAddress = comAddress || "na";
+    const paddress = pAddress || "na";
+
+    try {
+        const [existingUser] = await new Promise((resolve, reject) => {
+            db.query('SELECT email FROM Users WHERE email = ?', [email], (err, results) => {
+                if (err) reject(err);
+                else resolve(results);
             });
+        });
 
-            const insertQuery2 = 'INSERT INTO ProfileData (id, pAddress, company, title, comAddress,pNumber,picture) values ((SELECT id FROM users WHERE email = ?),?,?,?,?,?,?)';
-            let pictureUrl = null;
-            if (file) {
-                const fileUrl = await cloudinary.uploader.upload(file.path, {
-                    folder: "profile_pictures"
-                });
-                pictureUrl = fileUrl.url;
-            }
-            db.query(insertQuery2, [email, phone, companyName, jobTitle,], (err, results) => {
-                if (err) {
-                    return res.status(500).json({ error: err.message });
-                }
-            });
-
-
-
+        if (existingUser) {
+            return res.status(409).json({ error: "User already exists. Try logging in." });
         }
-    });
 
+        const salt = await encrypt.genSalt(10);
+        const hashedPassword = await encrypt.hash(password, salt);
 
+        await new Promise((resolve, reject) => {
+            db.query(
+                'INSERT INTO users (email, name, password, userType, workStatus) VALUES (?, ?, ?, ?, ?)',
+                [email, fname, hashedPassword, userType, workStatus],
+                (err) => {
+                    if (err) reject(err);
+                    else resolve();
+                }
+            );
+        });
+
+        let pictureUrl = null;
+        if (file) {
+            const fileUrl = await cloudinary.uploader.upload(file.path, {
+                folder: "profile_pictures",
+            });
+            pictureUrl = fileUrl.url;
+        }
+
+        const [user] = await new Promise((resolve, reject) => {
+            db.query('SELECT id FROM users WHERE email = ?', [email], (err, results) => {
+                if (err) reject(err);
+                else resolve(results);
+            });
+        });
+
+        const Uid = user.id;
+
+        await new Promise((resolve, reject) => {
+            db.query(
+                'INSERT INTO profileData (id, pAddress, company, title, comAddress, pNumber, picture) VALUES (?, ?, ?, ?, ?, ?, ?)',
+                [Uid, paddress, cName, title, cAddress, phone, pictureUrl],
+                (err) => {
+                    if (err) reject(err);
+                    else resolve();
+                }
+            );
+        });
+
+        res.json({ message: "User registered successfully!" });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: "An error occurred during signup." });
+    }
 });
 
 // * login route*//
