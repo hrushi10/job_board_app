@@ -20,6 +20,7 @@ app.use(express.json());
 const allowedOrigins = [
   "http://localhost:3000",
   "http://192.168.68.54:3000",
+  "http://172.20.0.119:3000",
   "http://example.com"  // Add more origins as needed
 ];
 

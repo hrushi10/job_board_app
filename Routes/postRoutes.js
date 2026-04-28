@@ -9,7 +9,8 @@ router.get('/jobs', (req, res) => {
     const jobposts = { jobId: "", jobTitle: "", jobDescription: "", companyAddress: "", jobCompany: "", salary: "", postedAt: "" };
 
     const getPosts = 'select * from jobposts inner join jobdescription on jobposts.jobId = jobdescription.jobId;';
-
+    const postContent = new Map();
+    
 
     db.query(getPosts, (err, results) => {
         if (err) {
