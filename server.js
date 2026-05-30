@@ -3,7 +3,8 @@ const express = require('express');
 const cookieParser = require("cookie-parser");
 const mysql = require('mysql2');
 const cors = require('cors');
-
+const chatRoutes = require('./Routes/chatRoutes');
+const { initializeVectorStore } = require('./services/ragService');
 
 
 //const cookieParser = require("cookie-parser");
@@ -56,17 +57,25 @@ db.connect(err => {
     return;
   }
   console.log('MySQL connection Successful');
+
+  db.query('SELECT * FROM jobs', (queryErr, results) => {
+    if (queryErr) {
+      console.error('Vector store initialization failed:', queryErr);
+      return;
+    }
+    initializeVectorStore(results);
+  });
 });
 
 module.exports = { db, app };
 
 // getting results from database
-app.get('/jobs', (req, res) => { //
-  db.query('SELECT * FROM jobs', (err, results) => { // running the query and storing the results in results 
+app.get('/jobs', (req, res) => {
+  db.query('SELECT * FROM jobs', (err, results) => {
     if (err) {
       return res.status(500).json({ error: err.message });
     }
-    res.json(results); // sends a message from server to client "jobs that are present in db"
+    res.json(results);
   });
 });
 
@@ -88,16 +97,13 @@ app.post('/jobs', (req, res) => {
   });
 });
 
-
-// const xyz = (para1, para2) => console.log() is like creating a new function where xyz is name of function, 
-//(contains the parameters) and anything after => is the body of the function 
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`)); // starting server by listing on port 
-
 app.use(cookieParser());
 const authRoutes = require('./Routes/authRoutes'); // getting the authRoutes module to pass the incoming req
 app.use('/auth', authRoutes); // this helps the server pass req starting with /auth
 
+app.use('/api/chat', chatRoutes); // register chat API route
+
 const postRoutes = require('./Routes/postRoutes'); // getting the authRoutes module to pass the incoming req
 app.use('/allJobs', postRoutes);
 
-
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`)); // starting server by listing on port 

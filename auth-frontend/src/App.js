@@ -5,6 +5,8 @@ import Home from "./pages/Home";
 import Navbar from "./pages/components/Navbar";
 import Upload from "./pages/components/Upload_ProfileP";
 import Profile from "./pages/Profile";
+import Chatbot from "./pages/testbot";
+import Chat from "./services/chatApi";
 
 function App() {
     return (
@@ -16,6 +18,8 @@ function App() {
                  <Route path="/login" element={<Login />} />
                  <Route path="/profile" element={<Profile />} />
                  <Route path="/upload" element={<Upload />} />
+                 <Route path="/testbot" element={<Chatbot />} />
+                 <Route path="/chat" element={<Chat />} />
               </Routes>
         </Router>
     );

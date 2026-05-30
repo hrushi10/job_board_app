@@ -106,6 +106,8 @@ router.post('/signup', upload.single("profilePicture"), async (req, res) => {
     }
 });
 
+
+
 // * login route*//
 router.post('/login', async (req, res) => {
     const {email, password} = req.body;
